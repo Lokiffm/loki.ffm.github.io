@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Flappy Bird</title>
+  <style>
+    body { display:flex; justify-content:center; align-items:center; height:100vh; background:#70c5ce; margin:0; }
+    canvas { background:#cceeff; border:2px solid #000; }
+  </style>
+</head>
+<body>
+  <canvas id="flappy" width="320" height="480"></canvas>
+  <script>
+    const cvs=document.getElementById("flappy"),ctx=cvs.getContext("2d");
+    let frames=0,gravity=0.25,jump=4,speed=2,state="start",score=0;
+
+    let bird={x:50,y:150,w:20,h:20,dy:0};
+    let pipes=[];
+
+    document.addEventListener("keydown",()=>{if(state==="over") location.reload(); bird.dy=-jump; state="play";});
+
+    function drawBird(){ctx.fillStyle="yellow"; ctx.fillRect(bird.x,bird.y,bird.w,bird.h);}
+    function drawPipes(){
+      pipes.forEach(p=>{
+        ctx.fillStyle="green";
+        ctx.fillRect(p.x,0,40,p.top);
+        ctx.fillRect(p.x,p.top+100,40,cvs.height-(p.top+100));
+      });
+    }
+
+    function update(){
+      if(state==="play"){
+        bird.dy+=gravity; bird.y+=bird.dy;
+        if(frames%90===0){pipes.push({x:cvs.width,top:Math.random()*200+50});}
+        pipes.forEach(p=>p.x-=speed);
+        pipes=pipes.filter(p=>p.x>-40);
+        pipes.forEach(p=>{
+          if(bird.x< p.x+40&&bird.x+bird.w>p.x&&(bird.y<p.top||bird.y+bird.h>p.top+100)){
+            state="over";
+          }
+        });
+        if(bird.y+cvs.height<0||bird.y>cvs.height) state="over";
+        score=Math.floor(frames/90);
+      }
+    }
+
+    function draw(){
+      ctx.fillStyle="#70c5ce"; ctx.fillRect(0,0,cvs.width,cvs.height);
+      drawBird(); drawPipes();
+      ctx.fillStyle="black"; ctx.fillText("Score: "+score,10,20);
+      if(state==="start") ctx.fillText("Press any key to start",80,240);
+      if(state==="over") ctx.fillText("Game Over! Press any key",70,240);
+    }
+
+    function loop(){update(); draw(); frames++; requestAnimationFrame(loop);}
+    loop();
+  </script>
+</body>
+</html>
